@@ -1,18 +1,6 @@
 require 'fog/core/credentials'
 
 module Fog
-  class << self
-    def available_providers
-      @available_providers ||= Fog.providers.values.select do |provider|
-        Object.constants.include?(provider) && Object.const_get(provider).available?
-      end.sort
-    end
-
-    def registered_providers
-      @registered_providers ||= Fog.providers.values.sort
-    end
-  end
-
   class Bin
     class << self
       def available?
@@ -49,6 +37,46 @@ module Fog
       def collections
         services.map {|service| self[service].collections}.flatten.sort_by {|service| service.to_s}
       end
+
+      def descendants
+        ObjectSpace.each_object(Class).select { |klass| klass < self }
+      end
+
+      def registered_providers
+        descendants.map { |d| "#{d}" }
+      end
+
+      def available_providers
+        descendants.select do |d|
+          begin
+            d.available?
+          rescue Exception
+            nil
+          end
+        end.map { |d| "#{d}" }
+      end
+    end
+  end
+
+  class << self
+    def available_object_providers
+      Fog.providers.values.select do |provider|
+        d = Object.constants.include?(provider.to_sym) && Object.const_get(provider.to_sym)
+
+        begin
+          d.available?
+        rescue Exception
+          nil
+        end
+      end.sort
+    end
+
+    def available_providers
+      @available_providers ||= (available_object_providers | Bin.available_providers).sort
+    end
+
+    def registered_providers
+      @registered_providers ||= (Fog.providers.values | Bin.registered_providers).sort
     end
   end
 end
