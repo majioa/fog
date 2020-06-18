@@ -1,6 +1,10 @@
 #!/usr/bin/env ruby
 
-require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'fog'))
+begin
+  require 'fog'
+rescue LoadError
+  require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'fog'))
+end
 require 'optparse'
 require 'irb'
 require 'yaml'
