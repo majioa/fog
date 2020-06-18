@@ -69,7 +69,7 @@ else
 
   # FIXME: hacks until we can `include Fog` in bin
   CDN     = Fog::CDN
-  Compute = Fog::Compute
+  Compute = Fog::Compute if not defined?(Compute)
   DNS     = Fog::DNS
   Storage = Fog::Storage
 
